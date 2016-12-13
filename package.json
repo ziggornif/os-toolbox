@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ziggornif/os-toolbox.git"
+    "url": "git+https://github.com/Ziggornif/os-toolbox.git"
   },
   "keywords": [
     "os",
@@ -27,10 +27,16 @@
   "engines": {
     "node": "*"
   },
-  "_id": "os-toolbox@0.1.0",
   "author": "Matthieu Drouian",
   "contributors": [
     "Matthieu Drouian <matthieudrouian@gmail.com> (http://ziggornif.xyz)"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ziggornif/os-toolbox/issues"
+  },
+  "homepage": "https://github.com/Ziggornif/os-toolbox#readme",
+  "scripts": {
+    "test": "mocha"
+  }
 }
