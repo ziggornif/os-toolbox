@@ -23,7 +23,7 @@ ostb.platform(); //ex : linux
 ```
 
 ### Get uptime
-Get system uptime in millis.
+Get system uptime in seconds.
 ``` javascript
 ostb.uptime(); //ex : 419419
 ```

@@ -6,14 +6,14 @@ const ps = require('current-processes');
 const childProcess = require('child_process')
 
 exports.platform = function() {
-    return q.when(process.platform);
+    return process.platform;
 }
 
 exports.uptime = function() {
-    return q.when(os.uptime());
+    return os.uptime();
 }
 
-exports.cpuUsage = function() {
+exports.cpuLoad = function() {
     var deffered = q.defer();
     var beforeCpuInfos = getCPUInfo();
 	
@@ -49,7 +49,7 @@ exports.memoryUsage = function() {
     return deffered.promise;
 }
 
-exports.currentProcess = function(callback) {
+exports.currentProcesses = function(callback) {
     var deffered = q.defer();
     ps.get(function(err, processes) {
         if (err) {
