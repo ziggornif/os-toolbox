@@ -1,0 +1,36 @@
+{
+  "name": "os-toolbox",
+  "version": "0.1.0",
+  "description": "Operating-system toolbox to get system metrics.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ziggornif/os-toolbox.git"
+  },
+  "keywords": [
+    "os",
+    "operating system",
+    "server",
+    "memory",
+    "cpu",
+    "monitor",
+    "stats",
+    "harddrive"
+  ],
+  "dependencies": {
+    "current-processes": "^0.2.1",
+    "lodash": "^4.17.2",
+    "q": "^1.4.1"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  },
+  "_id": "os-toolbox@0.1.0",
+  "author": "Matthieu Drouian",
+  "contributors": [
+    "Matthieu Drouian <matthieudrouian@gmail.com> (http://ziggornif.xyz)"
+  ],
+  "license": "MIT"
+}
