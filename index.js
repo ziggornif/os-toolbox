@@ -5,53 +5,66 @@ const _ = require('lodash');
 const ps = require('current-processes');
 const childProcess = require('child_process')
 
-exports.platform = function() {
+exports.platform = function () {
     return process.platform;
 }
 
-exports.uptime = function() {
+exports.uptime = function () {
     return os.uptime();
 }
 
-exports.cpuLoad = function() {
+exports.cpuLoad = function () {
     var deffered = q.defer();
     var beforeCpuInfos = getCPUInfo();
-	
-    setTimeout(function() {
+
+    setTimeout(function () {
         var afterCpuInfos = getCPUInfo();
-		
-        var idle 	= afterCpuInfos.idle - beforeCpuInfos.idle;
-        var total 	= afterCpuInfos.total - beforeCpuInfos.total;
-        var perc	= idle / total;
-	  	
+
+        var idle = afterCpuInfos.idle - beforeCpuInfos.idle;
+        var total = afterCpuInfos.total - beforeCpuInfos.total;
+        var perc = idle / total;
+
         deffered.resolve(Math.floor((1 - perc) * 100));
-	  		
-    }, 1000 );
+
+    }, 1000);
     return deffered.promise;
 }
 
-exports.memoryUsage = function() {
+exports.memoryUsage = function () {
     var deffered = q.defer();
-    var computeUsage = function(used, total) {
+    var computeUsage = function (used, total) {
         return Math.round(100 * (used / total));
     };
 
-    childProcess.exec('free -m', function(err, stdout, stderr) {
-        if (err) {
+    if (process.platform == 'win32') {
+
+        q.all([
+            winGetMemory('freephysicalmemory'),
+            winGetMemory('TotalVisibleMemorySize')
+        ]).then(function (results) {
+            deffered.resolve(100 - computeUsage(results[0], results[1]));
+        }, function (err) {
             deffered.reject(err);
-        } else {
-            var data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
-            var used = parseInt(data[2]);
-            var total = parseInt(data[1]);
-            deffered.resolve(computeUsage(used, total));
-        }
-    });
+        });
+    } else {
+        childProcess.exec('free -m', function (err, stdout, stderr) {
+            if (err) {
+                deffered.reject(err);
+            } else {
+                var data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
+                var used = parseInt(data[2]);
+                var total = parseInt(data[1]);
+                deffered.resolve(computeUsage(used, total));
+            }
+        });
+    }
+
     return deffered.promise;
 }
 
-exports.currentProcesses = function(callback) {
+exports.currentProcesses = function (callback) {
     var deffered = q.defer();
-    ps.get(function(err, processes) {
+    ps.get(function (err, processes) {
         if (err) {
             deffered.reject(err);
         } else {
@@ -62,29 +75,44 @@ exports.currentProcesses = function(callback) {
     return deffered.promise;
 }
 
-function getCPUInfo(callback){ 
+function getCPUInfo(callback) {
     var cpus = os.cpus();
-	
+
     var user = 0;
     var nice = 0;
     var sys = 0;
     var idle = 0;
     var irq = 0;
     var total = 0;
-	
-    for(var cpu in cpus){
-		
+
+    for (var cpu in cpus) {
+
         user += cpus[cpu].times.user;
         nice += cpus[cpu].times.nice;
         sys += cpus[cpu].times.sys;
         irq += cpus[cpu].times.irq;
         idle += cpus[cpu].times.idle;
     }
-	
+
     var total = user + nice + sys + idle + irq;
-	
+
     return {
-        'idle': idle, 
+        'idle': idle,
         'total': total
     };
+}
+
+function winGetMemory(command) {
+    var deffered = q.defer();
+
+    childProcess.exec('wmic os get ' + command + '  /format:value', function (err, stdout, stderr) {
+        if (err) {
+            deffered.reject(err);
+        } else {
+            let used = parseInt(stdout.split('\n')[2].split('=')[1]);
+            deffered.resolve(used);
+        }
+    });
+
+    return deffered.promise;
 }
