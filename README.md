@@ -1,7 +1,7 @@
 OS Toolbox
 ==========
 [![NPM version][npm-image]][npm-url]
-[![build status](https://secure.travis-ci.org/Ziggornif/os-toolbox)](https://travis-ci.org/Ziggornif/os-toolbox)
+[![Build Status](https://travis-ci.org/Ziggornif/os-toolbox.svg?branch=master)](https://travis-ci.org/Ziggornif/os-toolbox)
 
 ## Installation
 ``` bash
