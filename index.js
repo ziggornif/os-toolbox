@@ -36,16 +36,30 @@ exports.memoryUsage = function() {
         return Math.round(100 * (used / total));
     };
 
-    childProcess.exec('free -m', function(err, stdout, stderr) {
-        if (err) {
+    if(process.platform == 'win32') {
+
+        q.all([
+            winGetMemory('freephysicalmemory'),
+            winGetMemory('TotalVisibleMemorySize')
+        ]).then(function(results) {
+            deffered.resolve(100 - computeUsage(results[0], results[1]));
+        }, function(err) {
             deffered.reject(err);
-        } else {
-            var data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
-            var used = parseInt(data[2]);
-            var total = parseInt(data[1]);
-            deffered.resolve(computeUsage(used, total));
-        }
-    });
+        });
+    }
+    else {
+        childProcess.exec('free -m', function(err, stdout, stderr) {
+            if (err) {
+                deffered.reject(err);
+            } else {
+                var data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
+                var used = parseInt(data[2]);
+                var total = parseInt(data[1]);
+                deffered.resolve(computeUsage(used, total));
+            }
+        });
+    }
+    
     return deffered.promise;
 }
 
@@ -87,4 +101,19 @@ function getCPUInfo(callback){
         'idle': idle, 
         'total': total
     };
+}
+
+function winGetMemory(command){
+	var deffered = q.defer();
+
+    childProcess.exec('wmic os get ' + command + '  /format:value', function(err, stdout, stderr) {
+        if (err) {
+            deffered.reject(err);
+        } else {
+            let used = parseInt(stdout.split('\n')[2].split('=')[1]);
+            deffered.resolve(used);
+        }
+    });
+
+	return deffered.promise;
 }
