@@ -31,7 +31,7 @@ ostb.uptime(); //ex : 419419
 ### Get CPU load
 Get cpu load percentage.
 ``` javascript
-ostb.cpuUsage().then(function(cpuusage){
+ostb.cpuLoad().then(function(cpuusage){
    console.log(cpuusage); //ex: 34 (percent)
 });
 ```
@@ -49,7 +49,7 @@ ostb.memoryUsage().then(function(memusage){
 ### Get current processes
 Get current running processes order by cpu usage.
 ``` javascript
-ostb.currentProcess().then(function(processes){
+ostb.currentProcesses().then(function(processes){
    console.log(processes);
 }, function(error){
     //errors here
