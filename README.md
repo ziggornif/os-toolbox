@@ -1,6 +1,7 @@
 OS Toolbox
 ==========
 [![NPM version][npm-image]][npm-url]
+[![build status](https://secure.travis-ci.org/substack/os-toolbox.png)](https://travis-ci.org/substack/os-toolbox)
 
 ## Installation
 ``` bash
