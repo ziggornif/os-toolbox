@@ -1,6 +1,6 @@
 {
   "name": "os-toolbox",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Operating-system toolbox to get system metrics.",
   "main": "index.js",
   "repository": {
@@ -31,7 +31,8 @@
   },
   "author": "Matthieu Drouian",
   "contributors": [
-    "Matthieu Drouian <matthieudrouian@gmail.com> (http://ziggornif.xyz)"
+    "Matthieu Drouian <matthieudrouian@gmail.com> (https://github.com/Ziggornif)",
+    "Martial Relier <martial.relier@gmail.com> (https://github.com/mrelier)"
   ],
   "license": "MIT",
   "bugs": {
