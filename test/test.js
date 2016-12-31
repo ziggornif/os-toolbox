@@ -3,7 +3,7 @@ var ostb = require('..')
 
 describe('os-toolbox', function () {
     describe('#uptime()', function () {
-        it('should return uptime without error', function (done) {
+        it('should return uptime', function (done) {
             var value = ostb.uptime();
             if (value) {
                 done();
@@ -14,7 +14,7 @@ describe('os-toolbox', function () {
     });
 
     describe('#platform()', function () {
-        it('should return platform without error', function (done) {
+        it('should return platform', function (done) {
             var value = ostb.platform();
             if (value) {
                 done();
@@ -25,7 +25,7 @@ describe('os-toolbox', function () {
     });
 
     describe('#cpuLoad()', function () {
-        it('should return cpu load without error', function (done) {
+        it('should return cpu load', function (done) {
             ostb.cpuLoad().then(function (load) {
                 if (load) {
                     done();
@@ -39,7 +39,7 @@ describe('os-toolbox', function () {
     });
 
     describe('#memoryUsage()', function () {
-        it('should return memory usage without error', function (done) {
+        it('should return memory usage', function (done) {
             ostb.memoryUsage().then(function (memusage) {
                 if (memusage) {
                     done();
@@ -53,7 +53,7 @@ describe('os-toolbox', function () {
     });
 
     describe('#currentProcesses()', function () {
-        it('should return current running processes order by cpu usage without error', function (done) {
+        it('should return current running processes order by cpu usage', function (done) {
             ostb.currentProcesses().then(function (processes) {
                 if (processes) {
                     done();

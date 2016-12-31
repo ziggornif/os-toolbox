@@ -36,18 +36,17 @@ exports.memoryUsage = function () {
         return Math.round(100 * (used / total));
     };
 
-    if (process.platform == 'win32') {
-
+    if (process.platform === 'win32') {
         q.all([
-            winGetMemory('freephysicalmemory'),
-            winGetMemory('TotalVisibleMemorySize')
+            winGetFreeMemory(),
+            winGetTotalMemory()
         ]).then(function (results) {
             deffered.resolve(100 - computeUsage(results[0], results[1]));
         }, function (err) {
             deffered.reject(err);
         });
     } else {
-        childProcess.exec('free -m', function (err, stdout, stderr) {
+        childProcess.exec('free -m', function (err, stdout) {
             if (err) {
                 deffered.reject(err);
             } else {
@@ -62,7 +61,7 @@ exports.memoryUsage = function () {
     return deffered.promise;
 }
 
-exports.currentProcesses = function (callback) {
+exports.currentProcesses = function () {
     var deffered = q.defer();
     ps.get(function (err, processes) {
         if (err) {
@@ -75,7 +74,7 @@ exports.currentProcesses = function (callback) {
     return deffered.promise;
 }
 
-function getCPUInfo(callback) {
+function getCPUInfo() {
     var cpus = os.cpus();
 
     var user = 0;
@@ -102,10 +101,25 @@ function getCPUInfo(callback) {
     };
 }
 
-function winGetMemory(command) {
+function winGetFreeMemory(){
     var deffered = q.defer();
 
-    childProcess.exec('wmic os get ' + command + '  /format:value', function (err, stdout, stderr) {
+    childProcess.exec('wmic os get freephysicalmemory /format:value', function (err, stdout) {
+        if (err) {
+            deffered.reject(err);
+        } else {
+            let used = parseInt(stdout.split('\n')[2].split('=')[1]);
+            deffered.resolve(used);
+        }
+    });
+
+    return deffered.promise;
+}
+
+function winGetTotalMemory() {
+    var deffered = q.defer();
+
+    childProcess.exec('wmic os get TotalVisibleMemorySize /format:value', function (err, stdout) {
         if (err) {
             deffered.reject(err);
         } else {
