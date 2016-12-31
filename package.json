@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "current-processes": "^0.2.1",
-    "lodash": "^4.17.2",
+    "lodash": "^4.17.3",
     "q": "^1.4.1"
   },
   "devDependencies": {
