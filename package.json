@@ -1,6 +1,6 @@
 {
   "name": "os-toolbox",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Operating-system toolbox to get system metrics.",
   "main": "index.js",
   "repository": {
@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "current-processes": "^0.2.1",
-    "lodash": "^4.17.3",
+    "lodash": "^4.17.4",
     "q": "^1.4.1"
   },
   "devDependencies": {
