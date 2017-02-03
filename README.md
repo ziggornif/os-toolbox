@@ -48,9 +48,33 @@ ostb.memoryUsage().then(function(memusage){
 ```
 
 ### Get current processes
-Get current running processes order by cpu usage.
+Get current running processes.
 ``` javascript
 ostb.currentProcesses().then(function(processes){
+   console.log(processes);
+}, function(error){
+    //errors here
+});
+```
+
+**Using sort :**
+
+Results could be sort by each attributes (cpu, memory, pid ...) (cf example)
+
+Sort param format:
+* type: pid, name, cpu or mem
+* order: asc or desc
+
+``` javascript
+   { 
+       type: 'cpu', 
+       order: 'desc'
+    }
+```
+
+Exemple:
+``` javascript
+ostb.currentProcesses(sort).then(function(processes){
    console.log(processes);
 }, function(error){
     //errors here
@@ -60,41 +84,16 @@ ostb.currentProcesses().then(function(processes){
 **The following is an example current processes output :**
 
 ``` javascript
-[
-   {
-      "pid":1,
-      "name":"micro-inetd",
-      "cpu":0,
-      "mem":{
-         "private":192512,
-         "virtual":4153344,
-         "usage":0.00035077548249540783
-      }
-   },
-   {
-      "pid":264,
-      "name":"dropbear",
-      "cpu":0,
-      "mem":{
-         "private":2326528,
-         "virtual":19845120,
-         "usage":0.004239159022497695
-      }
-   },
-   {
-      "pid":774,
-      "name":"tmux",
-      "cpu":0,
-      "mem":{
-         "private":2904064,
-         "virtual":126709760,
-         "usage":0.0052914854699839175
-      }
-	}
+[ { pid: 2316, name: 'code', cpu: 4, mem: 1.114957060891639 },
+  { pid: 2310, name: 'nautilus', cpu: 8, mem: 0.989467485779745 },
+  { pid: 3867, name: 'notify-osd', cpu: 0, mem: 0.8229067957850149 },
+  { pid: 2312, name: 'albert', cpu: 1, mem: 0.8190965839223904 },
+  { pid: 1716, name: 'code', cpu: 0.3, mem: 0.8020248554469948 },
+  { pid: 2457, name: 'code', cpu: 1.6, mem: 0.7947013313474048 }
 ]
 ```
 
-### Get system services list
+### Get system services list (Linux only)
 Get system services list.
 ``` javascript
 ostb.services().then(function (result) {
@@ -110,7 +109,7 @@ Results could be filtered by service name (cf example)
 
 Filters param format:
 ``` javascript
-   [{name: 'service'}, ....]
+   [{name: 'service'}, {name: ....]
 ```
 
 Exemple:

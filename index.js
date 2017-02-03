@@ -5,19 +5,19 @@ const _ = require('lodash');
 const ps = require('current-processes');
 const childProcess = require('child_process')
 
-exports.platform = function () {
+exports.platform = function() {
     return process.platform;
 }
 
-exports.uptime = function () {
+exports.uptime = function() {
     return os.uptime();
 }
 
-exports.cpuLoad = function () {
+exports.cpuLoad = function() {
     var deffered = q.defer();
     var beforeCpuInfos = getCPUInfo();
 
-    setTimeout(function () {
+    setTimeout(function() {
         var afterCpuInfos = getCPUInfo();
 
         var idle = afterCpuInfos.idle - beforeCpuInfos.idle;
@@ -30,9 +30,9 @@ exports.cpuLoad = function () {
     return deffered.promise;
 }
 
-exports.memoryUsage = function () {
+exports.memoryUsage = function() {
     var deffered = q.defer();
-    var computeUsage = function (used, total) {
+    var computeUsage = function(used, total) {
         return Math.round(100 * (used / total));
     };
 
@@ -40,13 +40,13 @@ exports.memoryUsage = function () {
         q.all([
             winGetFreeMemory(),
             winGetTotalMemory()
-        ]).then(function (results) {
+        ]).then(function(results) {
             deffered.resolve(100 - computeUsage(results[0], results[1]));
-        }, function (err) {
+        }, function(err) {
             deffered.reject(err);
         });
     } else {
-        childProcess.exec('free -m', function (err, stdout) {
+        childProcess.exec('free -m', function(err, stdout) {
             if (err) {
                 deffered.reject(err);
             } else {
@@ -61,48 +61,65 @@ exports.memoryUsage = function () {
     return deffered.promise;
 }
 
-exports.currentProcesses = function () {
+exports.currentProcesses = function(sort) {
     var deffered = q.defer();
-    ps.get(function (err, processes) {
+    var currentproc = [];
+    ps.get(function(err, processes) {
         if (err) {
             deffered.reject(err);
         } else {
-            const sorted = _.sortBy(processes, 'cpu');
-            deffered.resolve(sorted);
+            processes.forEach(function(proc) {
+                var process = {};
+                process.pid = proc.pid;
+                process.name = proc.name;
+                process.cpu = proc.cpu;
+                process.mem = proc.mem.usage;
+                currentproc.push(process);
+            });
+            if (sort) {
+                const sorted = _.orderBy(currentproc, [sort.type], [sort.order]);
+                console.log(sorted);
+                deffered.resolve(sorted);
+            } else {
+                deffered.resolve(currentproc);
+            }
         }
     });
     return deffered.promise;
 }
 
-exports.services = function (filters){
+exports.services = function(filters) {
     var deffered = q.defer();
     var listeServices = [];
-    
-    childProcess.exec('service --status-all', function (err, stdout) {
-        if (err) {
-            console.log(err);
-        } else {
-            var result = stdout.split('\n');
-            result.splice(-1,1);
-            result.forEach(function(line) {
-                var data = line.split(']');
-                var service = {};
-                service.name = data[1].trim();
-                service.runing = (data[0].trim().substring(2,3) === '+') ? true : false;
-                listeServices.push(service);
-            });
-            
-            if(filters){
-                var filteredServices = [];
-                filters.forEach(function(filter){
-                    filteredServices.push(_.find(listeServices, filter));
-                });
-                deffered.resolve(filteredServices);
+    if (process.platform === 'linux') {
+        childProcess.exec('service --status-all', function(err, stdout) {
+            if (err) {
+                console.log(err);
             } else {
-                deffered.resolve(listeServices);
+                var result = stdout.split('\n');
+                result.splice(-1, 1);
+                result.forEach(function(line) {
+                    var data = line.split(']');
+                    var service = {};
+                    service.name = data[1].trim();
+                    service.runing = (data[0].trim().substring(2, 3) === '+') ? true : false;
+                    listeServices.push(service);
+                });
+
+                if (filters) {
+                    var filteredServices = [];
+                    filters.forEach(function(filter) {
+                        filteredServices.push(_.find(listeServices, filter));
+                    });
+                    deffered.resolve(filteredServices);
+                } else {
+                    deffered.resolve(listeServices);
+                }
             }
-        }
-    });
+        });
+    } else {
+        deffered.reject(new Error("Unsuported platform"));
+    }
 
     return deffered.promise;
 }
@@ -134,10 +151,10 @@ function getCPUInfo() {
     };
 }
 
-function winGetFreeMemory(){
+function winGetFreeMemory() {
     var deffered = q.defer();
 
-    childProcess.exec('wmic os get freephysicalmemory /format:value', function (err, stdout) {
+    childProcess.exec('wmic os get freephysicalmemory /format:value', function(err, stdout) {
         if (err) {
             deffered.reject(err);
         } else {
@@ -152,7 +169,7 @@ function winGetFreeMemory(){
 function winGetTotalMemory() {
     var deffered = q.defer();
 
-    childProcess.exec('wmic os get TotalVisibleMemorySize /format:value', function (err, stdout) {
+    childProcess.exec('wmic os get TotalVisibleMemorySize /format:value', function(err, stdout) {
         if (err) {
             deffered.reject(err);
         } else {
