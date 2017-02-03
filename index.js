@@ -74,6 +74,39 @@ exports.currentProcesses = function () {
     return deffered.promise;
 }
 
+exports.services = function (filters){
+    var deffered = q.defer();
+    var listeServices = [];
+    
+    childProcess.exec('service --status-all', function (err, stdout) {
+        if (err) {
+            console.log(err);
+        } else {
+            var result = stdout.split('\n');
+            result.splice(-1,1);
+            result.forEach(function(line) {
+                var data = line.split(']');
+                var service = {};
+                service.name = data[1].trim();
+                service.runing = (data[0].trim().substring(2,3) === '+') ? true : false;
+                listeServices.push(service);
+            });
+            
+            if(filters){
+                var filteredServices = [];
+                filters.forEach(function(filter){
+                    filteredServices.push(_.find(listeServices, filter));
+                });
+                deffered.resolve(filteredServices);
+            } else {
+                deffered.resolve(listeServices);
+            }
+        }
+    });
+
+    return deffered.promise;
+}
+
 function getCPUInfo() {
     var cpus = os.cpus();
 

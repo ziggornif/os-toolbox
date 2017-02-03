@@ -57,7 +57,7 @@ ostb.currentProcesses().then(function(processes){
 });
 ```
 
-The following is an example current processes output :
+**The following is an example current processes output :**
 
 ``` javascript
 [
@@ -92,6 +92,56 @@ The following is an example current processes output :
       }
 	}
 ]
+```
+
+### Get system services list
+Get system services list.
+``` javascript
+ostb.services().then(function (result) {
+   console.log(result);
+}, function(error){
+    //errors here
+});
+```
+
+**Using filters :**
+
+Results could be filtered by service name (cf example)
+
+Filters param format:
+``` javascript
+   [{name: 'service'}, ....]
+```
+
+Exemple:
+``` javascript
+ostb.services(filters).then(function (result) {
+   console.log(result);
+}, function(error){
+    //errors here
+});
+```
+
+**The following is an example system services output :**
+``` javascript
+[ { name: 'apache2', runing: false },
+  { name: 'cron', runing: true },
+  { name: 'dbus', runing: false },
+  { name: 'exim4', runing: false },
+  { name: 'nginx', runing: false },
+  { name: 'php5-fpm', runing: false },
+  { name: 'postgresql', runing: false },
+  { name: 'procps', runing: false },
+  { name: 'rabbitmq-server', runing: false },
+  { name: 'redis-server', runing: false },
+  { name: 'resolvconf', runing: true },
+  { name: 'rsync', runing: false },
+  { name: 'rsyslog', runing: false },
+  { name: 'sudo', runing: false },
+  { name: 'udev', runing: false },
+  { name: 'unattended-upgrades', runing: false },
+  { name: 'urandom', runing: false },
+  { name: 'x11-common', runing: false } ]
 ```
 
 ## License

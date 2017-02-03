@@ -65,4 +65,30 @@ describe('os-toolbox', function () {
             });
         });
     });
+    
+    describe('#services()', function () {
+        it('should return services', function (done) {
+            ostb.services().then(function (result) {
+                if (result) {
+                    done();
+                } else {
+                    done(new Error("Error getting current running processes"));
+                }
+            }, function(error){
+                done(new Error("Error getting current running processes"));
+            });
+        });
+        
+        it('should return filtered services', function (done) {
+            ostb.services([{name: 'apache2'}, {name: 'cron'}]).then(function (result) {
+                if (result) {
+                    done();
+                } else {
+                    done(new Error("Error getting current running processes"));
+                }
+            }, function(error){
+                done(new Error("Error getting current running processes"));
+            });
+        });
+    });
 });
