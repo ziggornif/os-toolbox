@@ -78,7 +78,6 @@ exports.currentProcesses = function(sort) {
             });
             if (sort) {
                 const sorted = _.orderBy(currentproc, [sort.type], [sort.order]);
-                console.log(sorted);
                 deffered.resolve(sorted);
             } else {
                 deffered.resolve(currentproc);
@@ -94,7 +93,7 @@ exports.services = function(filters) {
     if (process.platform === 'linux') {
         childProcess.exec('service --status-all', function(err, stdout) {
             if (err) {
-                console.log(err);
+                deffered.reject(err);
             } else {
                 var result = stdout.split('\n');
                 result.splice(-1, 1);
