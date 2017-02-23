@@ -35,7 +35,7 @@ exports.memoryUsage = function() {
     var computeUsage = function(used, total) {
         return Math.round(100 * (used / total));
     };
-
+        //Windows platform
     if (process.platform === 'win32') {
         q.all([
             winGetFreeMemory(),
@@ -45,6 +45,17 @@ exports.memoryUsage = function() {
         }, function(err) {
             deffered.reject(err);
         });
+        //MacOSX platform
+    } else if (process.platform === "darwin") {
+        childProcess.exec('memory_pressure | grep "System-wide memory free percentage: "', function (err, stdout) {
+            if (err) {
+                deffered.reject(err);
+            } else {
+                var data = stdout.replace('%','').replace(/[\s\n\r]+/g, ' ').split(' ');
+                deffered.resolve(data[4]);
+            }
+        });
+        //Linux platform
     } else {
         childProcess.exec('free -m', function(err, stdout) {
             if (err) {
