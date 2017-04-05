@@ -2,6 +2,7 @@ var assert = require('assert');
 var ostb = require('..')
 
 describe('os-toolbox', function() {
+    this.timeout(10000);
     describe('#uptime()', function() {
         it('should return uptime', function(done) {
             var value = ostb.uptime();

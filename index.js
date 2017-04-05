@@ -6,11 +6,11 @@ const _ = require('lodash');
 const ps = require('current-processes');
 const childProcess = require('child_process')
 
-exports.platform = function() {
+exports.platform = () => {
     return process.platform;
 }
 
-exports.uptime = function() {
+exports.uptime = () => {
     return os.uptime();
 }
 
