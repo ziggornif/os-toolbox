@@ -1,6 +1,4 @@
 'use strict'
-const q = require('q');
-require('q-foreach')(q);
 const os = require('os');
 const _ = require('lodash');
 const ps = require('current-processes');
@@ -15,179 +13,183 @@ exports.uptime = () => {
 }
 
 exports.cpuLoad = () => {
-    let deffered = q.defer();
-    let beforeCpuInfos;
-    getCPUInfo().then(result => {
-        beforeCpuInfos = result;
-        return q.delay(1000);
-    }).then(() =>{
-        return getCPUInfo();
-    }).then(afterCpuInfos =>{
-        let idle = afterCpuInfos.idle - beforeCpuInfos.idle;
-        let total = afterCpuInfos.total - beforeCpuInfos.total;
-        let perc = idle / total;
-        deffered.resolve(Math.floor((1 - perc) * 100));
+    return new Promise((resolve, reject) => {
+        let beforeCpuInfos;
+        getCPUInfo().then(result => {
+            beforeCpuInfos = result;
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve();
+                }, 1000);
+            });
+        }).then(() => {
+            return getCPUInfo();
+        }).then(afterCpuInfos => {
+            let idle = afterCpuInfos.idle - beforeCpuInfos.idle;
+            let total = afterCpuInfos.total - beforeCpuInfos.total;
+            let perc = idle / total;
+            resolve(Math.floor((1 - perc) * 100));
+        }, (error) => {
+            reject(error);
+        });
     });
-
-    return deffered.promise;
 }
 
 exports.memoryUsage = () => {
-    let deffered = q.defer();
-    let computeUsage = (used, total) => {
-        return Math.round(100 * (used / total));
-    };
+    return new Promise((resolve, reject) => {
+        let computeUsage = (used, total) => {
+            return Math.round(100 * (used / total));
+        };
 
-    //Windows platform
-    if (process.platform === 'win32') {
-        q.all([
-            winGetFreeMemory(),
-            winGetTotalMemory()
-        ]).then(results => {
-            deffered.resolve(100 - computeUsage(results[0], results[1]));
-        }, err => {
-            deffered.reject(err);
-        });
-        //MacOSX platform
-    } else if (process.platform === "darwin") {
-        childProcess.exec('memory_pressure | grep "System-wide memory free percentage: "', (err, stdout) => {
-            if (err) {
-                deffered.reject(err);
-            } else {
-                let data = stdout.replace('%', '').replace(/[\s\n\r]+/g, ' ').split(' ');
-                deffered.resolve(data[4]);
-            }
-        });
-        //Linux platform
-    } else {
-        childProcess.exec('free -m', (err, stdout) => {
-            if (err) {
-                deffered.reject(err);
-            } else {
-                let data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
-                let used = parseInt(data[2]);
-                let total = parseInt(data[1]);
-                deffered.resolve(computeUsage(used, total));
-            }
-        });
-    }
-
-    return deffered.promise;
+        //Windows platform
+        if (process.platform === 'win32') {
+            Promise.all([
+                winGetFreeMemory(),
+                winGetTotalMemory()
+            ]).then(results => {
+                resolve(100 - computeUsage(results[0], results[1]));
+            }, err => {
+                reject(err);
+            });
+            //MacOSX platform
+        } else if (process.platform === "darwin") {
+            childProcess.exec('memory_pressure | grep "System-wide memory free percentage: "', (err, stdout) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    let data = stdout.replace('%', '').replace(/[\s\n\r]+/g, ' ').split(' ');
+                    resolve(data[4]);
+                }
+            });
+            //Linux platform
+        } else {
+            childProcess.exec('free -m', (err, stdout) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    let data = stdout.split('\n')[1].replace(/[\s\n\r]+/g, ' ').split(' ');
+                    let used = parseInt(data[2]);
+                    let total = parseInt(data[1]);
+                    resolve(computeUsage(used, total));
+                }
+            });
+        }
+    });
 }
 
 exports.currentProcesses = sort => {
-    let deffered = q.defer();
-    let currentproc = [];
-    ps.get((err, processes) => {
-        if (err) {
-            deffered.reject(err);
-        } else {
-            processes.forEach(proc => {
-                let process = {};
-                process.pid = proc.pid;
-                process.name = proc.name;
-                process.cpu = proc.cpu;
-                process.mem = proc.mem.usage;
-                currentproc.push(process);
-            });
-            if (sort) {
-                const sorted = _.orderBy(currentproc, [sort.type], [sort.order]);
-                deffered.resolve(sorted);
-            } else {
-                deffered.resolve(currentproc);
-            }
-        }
-    });
-    return deffered.promise;
-}
-
-exports.services = filters => {
-    let deffered = q.defer();
-    let listeServices = [];
-    if (process.platform === 'linux') {
-        childProcess.exec('service --status-all', (err, stdout) => {
+    return new Promise((resolve, reject) => {
+        let currentproc = [];
+        ps.get((err, processes) => {
             if (err) {
-                deffered.reject(err);
+                reject(err);
             } else {
-                let result = stdout.split('\n');
-                result.splice(-1, 1);
-                result.forEach(line => {
-                    let data = line.split(']');
-                    let service = {};
-                    service.name = data[1].trim();
-                    service.runing = (data[0].trim().substring(2, 3) === '+') ? true : false;
-                    listeServices.push(service);
+                processes.forEach(proc => {
+                    let process = {};
+                    process.pid = proc.pid;
+                    process.name = proc.name;
+                    process.cpu = proc.cpu;
+                    process.mem = proc.mem.usage;
+                    currentproc.push(process);
                 });
-
-                if (filters) {
-                    let filteredServices = [];
-                    filters.forEach(filter => {
-                        filteredServices.push(_.find(listeServices, filter));
-                    });
-                    deffered.resolve(filteredServices);
+                if (sort) {
+                    const sorted = _.orderBy(currentproc, [sort.type], [sort.order]);
+                    resolve(sorted);
                 } else {
-                    deffered.resolve(listeServices);
+                    resolve(currentproc);
                 }
             }
         });
-    } else {
-        deffered.reject(new Error("Unsuported platform"));
-    }
-    return deffered.promise;
+    });
+}
+
+exports.services = filters => {
+    return new Promise((resolve, reject) => {
+        let listeServices = [];
+        if (process.platform === 'linux') {
+            childProcess.exec('service --status-all', (err, stdout) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    let result = stdout.split('\n');
+                    result.splice(-1, 1);
+                    result.forEach(line => {
+                        let data = line.split(']');
+                        let service = {};
+                        service.name = data[1].trim();
+                        service.runing = (data[0].trim().substring(2, 3) === '+') ? true : false;
+                        listeServices.push(service);
+                    });
+
+                    if (filters) {
+                        let filteredServices = [];
+                        filters.forEach(filter => {
+                            filteredServices.push(_.find(listeServices, filter));
+                        });
+                        resolve(filteredServices);
+                    } else {
+                        resolve(listeServices);
+                    }
+                }
+            });
+        } else {
+            reject(new Error("Unsuported platform"));
+        }
+    });
 }
 
 function getCPUInfo() {
-    let deffered = q.defer();
-    const cpus = os.cpus();
+    return new Promise((resolve, reject) => {
+        const cpus = os.cpus();
+        if (!cpus) {
+            reject(new Error("Unexpected error"));
+        } else {
+            let user = 0,
+                nice = 0,
+                sys = 0,
+                idle = 0,
+                irq = 0,
+                total = 0;
 
-    let user = 0,
-        nice = 0,
-        sys = 0,
-        idle = 0,
-        irq = 0,
-        total = 0;
+            for (var cpu in cpus) {
 
-    q.forEach(cpus, cpu => {
-        let defer = q.defer();
-        user += cpu.times.user;
-        nice += cpu.times.nice;
-        sys += cpu.times.sys;
-        irq += cpu.times.irq;
-        idle += cpu.times.idle;
-        defer.resolve();
-        return defer.promise;
-    }).then(() => {
-        total = user + nice + sys + idle + irq;
-        deffered.resolve({
-            'idle': idle,
-            'total': total
-        })
+                user += cpus[cpu].times.user;
+                nice += cpus[cpu].times.nice;
+                sys += cpus[cpu].times.sys;
+                irq += cpus[cpu].times.irq;
+                idle += cpus[cpu].times.idle;
+            }
+            total = user + nice + sys + idle + irq;
+            resolve({
+                'idle': idle,
+                'total': total
+            });
+        }
     });
-    return deffered.promise;
 }
 
 function winGetFreeMemory() {
-    let deffered = q.defer();
-    childProcess.exec('wmic os get freephysicalmemory /format:value', function(err, stdout) {
-        if (err) {
-            deffered.reject(err);
-        } else {
-            let used = parseInt(stdout.split('\n')[2].split('=')[1]);
-            deffered.resolve(used);
-        }
+    return new Promise((resolve, reject) => {
+        childProcess.exec('wmic os get freephysicalmemory /format:value', function (err, stdout) {
+            if (err) {
+                reject(err);
+            } else {
+                let used = parseInt(stdout.split('\n')[2].split('=')[1]);
+                resolve(used);
+            }
+        });
     });
-    return deffered.promise;
 }
 
 function winGetTotalMemory() {
-    let deffered = q.defer();
-    childProcess.exec('wmic os get TotalVisibleMemorySize /format:value', function(err, stdout) {
-        if (err) {
-            deffered.reject(err);
-        } else {
-            let used = parseInt(stdout.split('\n')[2].split('=')[1]);
-            deffered.resolve(used);
-        }
+    return new Promise((resolve, reject) => {
+        childProcess.exec('wmic os get TotalVisibleMemorySize /format:value', function (err, stdout) {
+            if (err) {
+                reject(err);
+            } else {
+                let used = parseInt(stdout.split('\n')[2].split('=')[1]);
+                resolve(used);
+            }
+        });
     });
-    return deffered.promise;
 }
