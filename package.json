@@ -19,10 +19,11 @@
   ],
   "dependencies": {
     "current-processes": "^0.2.1",
-    "lodash": "^4.17.4"
+    "lodash.find": "^4.6.0",
+    "lodash.orderby": "^4.6.0"
   },
   "devDependencies": {
-    "mocha": "^3.4.2"
+    "mocha": "^4.0.1"
   },
   "optionalDependencies": {},
   "engineStrict": false,
