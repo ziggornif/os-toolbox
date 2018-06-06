@@ -1,7 +1,6 @@
 'use strict'
 const os = require('os');
-const find = require('lodash.find');
-const orderBy = require('lodash.orderby');
+const _ = require('lodash');
 const ps = require('current-processes');
 const childProcess = require('child_process')
 
@@ -94,7 +93,7 @@ exports.currentProcesses = sort => {
           currentproc.push(process);
         });
         if (sort) {
-          const sorted = orderBy(currentproc, [sort.type], [sort.order]);
+          const sorted = _.orderBy(currentproc, [sort.type], [sort.order]);
           resolve(sorted);
         } else {
           resolve(currentproc);
@@ -125,7 +124,7 @@ exports.services = filters => {
           if (filters) {
             let filteredServices = [];
             filters.forEach(filter => {
-              filteredServices.push(find(listeServices, filter));
+              filteredServices.push(_.find(listeServices, filter));
             });
             resolve(filteredServices);
           } else {
