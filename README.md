@@ -14,9 +14,6 @@ $ npm install os-toolbox
 var ostb = require( 'os-toolbox' );
 ```
 
-### Before use 
-**/!\ All functions use promises !**
-
 ### Get platform
 Get platform name.
 ``` javascript
